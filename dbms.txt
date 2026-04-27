@@ -1,0 +1,369 @@
+
+
+SET A
+
+1)
+create or replace function maxmin(int , int) returns text as '
+declare 
+	result text := ''not found'';
+	n1 alias for $1;
+	n2 alias for $2;
+begin 
+	if n1 = n2 then 
+		result := ''Both numbers are same'';
+	elsif n1>n2 then 
+		result := n1||'' is greater than ''||n2;
+	else	
+		result := n2||'' is greater than ''||n1;
+	end if ;
+	return result;
+end;'
+language 'plpgsql';
+/*
+output - 
+select maxmin(5,4);
+       maxmin        
+---------------------
+ 5 is greater than 4
+(1 row)
+
+select maxmin(4,4);
+        maxmin         
+-----------------------
+ Both numbers are same
+(1 row)
+*/
+
+
+2)
+
+create or replace function checkno(int) returns text as '
+declare
+	result text := '' NULL'';
+	n1 alias for $1;
+begin
+	if n1=0 then
+		result := '' Number is zero(0)'';
+	elsif n1>0 then
+		result := n1||''is a positive number'';
+	else 
+		result := n1|| '' is a negative number'';
+	end if ;
+	return result;
+end;'
+language 'plpgsql';
+/*
+output-
+elect checkno(3);
+        checkno        
+-----------------------
+ 3is a positive number
+(1 row)
+
+ select checkno(-3);
+         checkno         
+-------------------------
+ -3 is a negative number
+(1 row)
+
+select checkno(0);
+      checkno       
+--------------------
+  Number is zero(0)
+(1 row)
+*/
+3)
+
+create or replace function max3(int , int , int) returns text as'
+declare 
+	n1 alias for $1;
+	n2 alias for $2;
+	n3 alias for $3;
+	result text := '' NULL'';
+	max int ;
+	min int ;
+begin 
+	max :=n1;
+	min :=n1;
+	if n2>max then 
+		max :=n2;
+	end if ;
+	if n3>max then
+		max :=n3;
+	end if ;
+	if n2<min then
+		min :=n1;
+	end if ;
+	if n3<min then 
+		min :=n3;
+	end if ;
+	result:= max||'' is the maxmimum among the three and ''|| min || '' is the minimum among the three'';
+	if n1=n2 and n2=n3 then 
+		result := ''All the numbers are same'';
+	end if ;
+	return result;
+end;'
+language 'plpgsql';
+/*
+output - 
+select max3(3,1,6);
+                                  max3                                  
+------------------------------------------------------------------------
+ 6 is the maxmimum among the three and 3 is the minimum among the three
+(1 row)
+
+sy53=> select max3(3,6,1);
+                                  max3                                  
+------------------------------------------------------------------------
+ 6 is the maxmimum among the three and 1 is the minimum among the three
+(1 row)
+
+sy53=> select max3(6,3,1);
+                                  max3                                  
+------------------------------------------------------------------------
+ 6 is the maxmimum among the three and 1 is the minimum among the three
+(1 row)
+
+select max3(1,1,1);
+           max3           
+--------------------------
+ All the numbers are same
+(1 row)
+
+*/
+4)
+create or replace function evenodd(int) returns text as '
+declare
+n1 alias for $1;
+result text := ''NULL'';
+begin 
+	if n1 % 2  = 1 then 
+		result := n1|| '' is a odd number.'';
+	else
+		result:= n1||'' is a even number.'';
+	end if;
+	return result;
+end ;'
+language 'plpgsql';
+/*
+output- 
+ select evenodd(3);
+      evenodd       
+--------------------
+ 3 is a odd number.
+(1 row)
+
+sy53=> select evenodd(4);
+       evenodd       
+---------------------
+ 4 is a even number.
+(1 row)
+*?
+5)
+
+create or replace function sum_20(int)returns text as'
+declare
+	i int :=1;
+	sum int :=0;
+	result text := '''' ;
+begin 
+	loop
+		sum:=sum+i;
+		i:=i+1;
+		exit when i>$1;
+	end loop;
+	result :=''Sum of first ''||$1||'' numbers = ''|| sum;
+	return result;
+end;'
+language'plpgsql';
+
+output-
+
+CREATE FUNCTION
+
+sy53=> select sum_20(40);
+            sum_20             
+-------------------------------
+ Sum of first 40 numbers = 820
+(1 row)
+
+6)
+
+create or replace function eveninrange(a int,b int) returns text as'
+declare	
+	i int;
+	result text := '''';
+	s int;
+	e int;
+begin
+	if a<=b then
+		s = a;
+		e = b;
+	else 
+		s = b;
+		e = a;
+	end if ;
+	for i in s..e loop
+	    if i % 2 = 0 then
+        	result := result || i || '' '';
+        end if;
+    end loop;
+    return result;
+end;'
+language 'plpgsql';
+
+output - 
+CREATE FUNCTION
+sy53=> select eveninrange(30,50);
+            eveninrange            
+-----------------------------------
+ 30 32 34 36 38 40 42 44 46 48 50 
+(1 row)
+
+7)
+
+create or replace function sum_avg(n int) returns text as'
+declare
+	i int := 1;
+	sum int :=0;
+	avg numeric(6,2);
+	result text := '''';
+begin
+	while i<=n loop
+		sum :=sum+i;
+		i := i+1;
+	end loop;
+	avg := sum*1.0/n;
+	result := '' sum = ''|| sum|| '',Average = '' || avg;
+	return result;
+end;'
+language 'plpgsql';
+
+output -
+CREATE FUNCTION
+sy53=> select sum_avg(10);
+        sum_avg         
+------------------------
+  sum =55,Average= 5.50
+(1 row)
+
+8)
+create or replace function count_odd(m int, n int) returns text as'
+declare 
+	i int;
+	cnt int :=0;
+	result text := '''';
+begin
+	for i in m..n loop
+		if i % 2 <>0 then
+			cnt :=cnt +1;
+		end if ;
+	end loop;
+	result := '' Number of odd numbers =''||cnt;
+	return result;
+end;'
+language 'plpgsql';
+
+output-
+
+select count_odd(29,59);
+         count_odd          
+----------------------------
+  Number of odd numbers =16
+(1 row)
+
+
+9)
+create or replace function search( s int, m int , n int) returns text as '\d loan_app;
+declare
+	st int ;
+	ed int;
+	result text := '' '';
+begin 
+	if s>m then
+		st =m;
+		ed =s;
+	else
+		ed = m;
+		st =s;
+	end if;
+	result :='' '' ||n||'' not found in range from ''|| st ||'' to ''||ed;
+	for i in st..ed loop
+		if n=i then
+			result := '' '' ||n||'' found in range from ''|| st ||'' to ''||ed;
+			exit; 
+		end if;		
+	end loop;
+	return result;		
+end;'
+language 'plpgsql';
+
+output-
+CREATE FUNCTION
+select search(5,20,9);
+         search         
+------------------------
+  number found in range
+(1 row)
+
+sy53=> select search(20,5,9);
+         search         
+------------------------
+  number found in range
+(1 row)
+
+sy53=> select search(20,5,32);
+           search           
+----------------------------
+  number not found in range
+(1 row)
+
+ select search(5,30,32);
+           search           
+----------------------------
+  number not found in range
+(1 row)
+
+
+10)
+
+create or replace function num_word(n int) returns text as '
+declare
+	result text := '''';
+	d int;
+begin
+	while n>0 loop
+		d := n%10;
+		case d
+		    when 0 then result := ''Zero ''||result;
+		    when 1 then result := ''One ''||result;
+		    when 2 then result := ''Two ''||result;
+		    when 3 then result := ''Three ''||result;
+		    when 4 then result := ''Four ''||result;
+		    when 5 then result := ''Five ''||result;
+		    when 6 then result := ''Six ''||result;
+		    when 7 then result := ''Seven ''||result;
+		    when 8 then result := ''Eight ''||result;
+		    when 9 then result := ''Nine ''||result;
+		end case;
+		n:=n/10;
+	end loop;
+	return result;
+end;'
+language 'plpgsql';
+    
+output - 
+CREATE FUNCTION
+sy53=> select num_word(1234);
+      num_word       
+---------------------
+ One Two Three Four 
+(1 row)
+
+sy53=> select num_word(8776);
+        num_word        
+------------------------
+ Eight Seven Seven Six 
+(1 row)
+
+
