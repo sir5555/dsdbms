@@ -1,0 +1,976 @@
+//NAME:-OMKAR JITENDRA MAHAJAN
+//BATCH-b3
+//roll no:-53
+//assignment:-3
+
+SET A
+
+create table route1(
+	rno int primary key check(rno>0),
+	source varchar(20) not null,
+	dest varchar(20) not null check(source!=dest),
+	nos int check(nos >0));
+
+CREATE TABLE
+\d route1
+                      Table "public.route1"
+ Column |         Type          | Collation | Nullable | Default 
+--------+-----------------------+-----------+----------+---------
+ rno    | integer               |           | not null | 
+ source | character varying(20) |           | not null | 
+ dest   | character varying(20) |           | not null | 
+ nos    | integer               |           |          | 
+Indexes:
+    "route1_pkey" PRIMARY KEY, btree (rno)
+Check constraints:
+    "route1_check" CHECK (source::text <> dest::text)
+    "route1_nos_check" CHECK (nos > 0)
+    "route1_rno_check" CHECK (rno > 0)
+    
+select * from route1;
+ rno | source | dest | nos 
+-----+--------+------+-----
+(0 rows)
+
+
+insert into route1 values (1, 'station a', 'station b', 5);
+insert into route1 values (2, 'station b', 'station c', 7);
+insert into route1 values (3, 'station c', 'station d', 4);
+insert into route1 values (4, 'station a', 'station d', 6);
+insert into route1 values (5, 'station b', 'station d', 3);
+insert into route1 values (6, 'station a', 'station c', 8);
+insert into route1 values (7, 'station c', 'station e', 5);
+insert into route1 values (8, 'station d', 'station e', 4);
+
+sy53=> select * from route1;
+ rno |  source   |   dest    | nos 
+-----+-----------+-----------+-----
+   1 | station a | station b |   5
+   2 | station b | station c |   7
+   3 | station c | station d |   4
+   4 | station a | station d |   6
+   5 | station b | station d |   3
+   6 | station a | station c |   8
+   7 | station c | station e |   5
+   8 | station d | station e |   4
+(8 rows)
+
+
+
+create table bus1(
+	bno int primary key check(bno>0),
+	cap int check(cap>10),
+	depot_name varchar(20));
+
+ \d bus1
+                         Table ' 'public.bus1' '
+   Column   |         Type          | Collation | Nullable | Default 
+------------+-----------------------+-----------+----------+---------
+ bno        | integer               |           | not null | 
+ cap        | integer               |           |          | 
+ depot_name | character varying(20) |           |          | 
+Indexes:
+    ' 'bus1_pkey' ' PRIMARY KEY, btree (bno)
+Check constraints:
+    ' 'bus1_bno_check' ' CHECK (bno > 0)
+    ' 'bus1_cap_check' ' CHECK (cap > 10)
+
+ select * from bus1;
+ bno | cap | depot_name 
+-----+-----+------------
+(0 rows)
+
+
+insert into bus1 values (101, 50, 'depot one');
+insert into bus1 values (102, 45, 'depot one');
+insert into bus1 values (103, 40, 'depot two');
+insert into bus1 values (104, 55, 'depot two');
+insert into bus1 values (105, 50, 'depot three');
+insert into bus1 values (106, 60, 'depot three');
+
+select * from bus1;
+ bno | cap | depot_name  
+-----+-----+-------------
+ 101 |  50 | depot one
+ 102 |  45 | depot one
+ 103 |  40 | depot two
+ 104 |  55 | depot two
+ 105 |  50 | depot three
+ 106 |  60 | depot three
+(6 rows)
+
+
+create table brt(
+	bno int references bus1(bno),
+	rno int references route1(rno),
+	primary key(bno,rno));
+	
+\d brt
+                Table ' 'public.brt' '
+ Column |  Type   | Collation | Nullable | Default 
+--------+---------+-----------+----------+---------
+ bno    | integer |           | not null | 
+ rno    | integer |           | not null | 
+Indexes:
+    ' 'brt_pkey' ' PRIMARY KEY, btree (bno, rno)
+Foreign-key constraints:
+    ' 'brt_bno_fkey' ' FOREIGN KEY (bno) REFERENCES bus1(bno)
+    ' 'brt_rno_fkey' ' FOREIGN KEY (rno) REFERENCES route1(rno)
+
+
+select * from brt;
+ bno | rno 
+-----+-----
+(0 rows)
+
+
+insert into brt values (101, 1);
+insert into brt values (101, 4);
+insert into brt values (102, 2);
+insert into brt values (102, 6);
+insert into brt values (103, 3);
+insert into brt values (104, 5);
+insert into brt values (104, 7);
+insert into brt values (105, 8);
+insert into brt values (106, 1);
+insert into brt values (106, 3);
+
+select * from brt;
+ bno | rno 
+-----+-----
+ 101 |   1
+ 101 |   4
+ 102 |   2
+ 102 |   6
+ 103 |   3
+ 104 |   5
+ 104 |   7
+ 105 |   8
+ 106 |   1
+ 106 |   3
+(10 rows)
+
+
+
+select * from route1
+sy53-;
+ rno |  source   |   dest    | nos 
+-----+-----------+-----------+-----
+   1 | station a | station b |   5
+   2 | station b | station c |   7
+   3 | station c | station d |   4
+   4 | station a | station d |   6
+   5 | station b | station d |   3
+   6 | station a | station c |   8
+   7 | station c | station e |   5
+   8 | station d | station e |   4
+(8 rows)
+
+select * from brt;
+ bno | rno 
+-----+-----
+ 101 |   1
+ 101 |   4
+ 102 |   2
+ 102 |   6
+ 103 |   3
+ 104 |   5
+ 104 |   7
+ 105 |   8
+ 106 |   1
+ 106 |   3
+(10 rows)
+a)
+create or replace function routeofbus(bnum int) returns text as '
+declare
+	rec record;
+	result text :='' '';
+	c1 cursor for 
+	select * from route1 r , brt br
+	where r.rno = br.rno and br.bno= bnum;
+
+begin 
+	open c1;
+	loop
+	fetch c1 into rec;
+	exit when not found;
+
+	result := result || '' routeno:''|| rec.rno||'' from : ''||rec.source||'' To : ''||rec.dest||'' stations : ''||rec.nos||E''\n'';
+	end loop;
+	close c1;
+	return result;
+	end;'
+	language 'plpgsql';
+	
+output - 
+
+sy53=> select routeofbus(103);
+                        routeofbus                        
+----------------------------------------------------------
+   routeno:3 from : station c To : station d stations : 4+
+ 
+(1 row)
+
+sy53=> select routeofbus(106);
+                        routeofbus                        
+----------------------------------------------------------
+   routeno:1 from : station a To : station b stations : 5+
+  routeno:3 from : station c To : station d stations : 4 +
+ 
+(1 row)
+
+
+b)
+
+rno |  source   |   dest    | nos 
+-----+-----------+-----------+-----
+   1 | station a | station b |   5
+   2 | station b | station c |   7
+   3 | station c | station d |   4
+   4 | station a | station d |   6
+   5 | station b | station d |   3
+   6 | station a | station c |   8
+   7 | station c | station e |   5
+   8 | station d | station e |   4
+(8 rows)
+
+select * from bus1;
+ bno | cap | depot_name  
+-----+-----+-------------
+ 101 |  50 | depot one
+ 102 |  45 | depot one
+ 103 |  40 | depot two
+ 104 |  55 | depot two
+ 105 |  50 | depot three
+ 106 |  60 | depot three
+(6 rows)
+
+select * from brt;
+ bno | rno 
+-----+-----
+ 101 |   1
+ 101 |   4
+ 102 |   2
+ 102 |   6
+ 103 |   3
+ 104 |   5
+ 104 |   7
+ 105 |   8
+ 106 |   1
+ 106 |   3
+(10 rows)
+c)
+create or replace function busbtw(src varchar,des varchar) returns text as '
+declare 
+	rec record;
+	result text := '' '';
+	c2 cursor for 
+	select * from bus1 b , route1 r , brt br
+	where b.bno = br.bno and r.rno = br.rno and source = src and dest = des;
+
+begin 
+	open c2;
+	loop
+	fetch c2 into rec;
+	exit when not found;
+	result := result||''bus no : ''||rec.bno||'' capacity: ''||rec.cap||'' depot : ''||rec.depot_name||E''\n'';
+	end loop;
+	close c2;
+	return result;
+	end;'
+	language 'plpgsql';
+	
+output - 
+sy53=> select busbtw('station c','station d');
+                    busbtw                     
+-----------------------------------------------
+  bus no : 103 capacity: 40 depot : depot two +
+ bus no : 106 capacity: 60 depot : depot three+
+ 
+(1 row)
+
+sy53=> select busbtw('station b','station c');
+                    busbtw                    
+----------------------------------------------
+  bus no : 102 capacity: 45 depot : depot one+
+ 
+(1 row)
+
+
+
+
+
+
+SET B 
+
+create table teacher (
+	tno int primary key check(tno>0),
+	tname varchar(20) not null,
+	age int not null check(age>23),
+	exp int not null check(exp>0));
+CREATE TABLE
+sy53=> \d teacher 
+                     Table "public.teacher"
+ Column |         Type          | Collation | Nullable | Default 
+--------+-----------------------+-----------+----------+---------
+ tno    | integer               |           | not null | 
+ tname  | character varying(20) |           | not null | 
+ age    | integer               |           | not null | 
+ exp    | integer               |           | not null | 
+Indexes:
+    "teacher_pkey" PRIMARY KEY, btree (tno)
+Check constraints:
+    "teacher_age_check" CHECK (age > 23)
+    "teacher_exp_check" CHECK (exp > 0)
+    "teacher_tno_check" CHECK (tno > 0)
+
+select * from teacher;
+ tno | tname | age | exp 
+-----+-------+-----+-----
+(0 rows)
+
+insert into teacher values (1, 'amit', 25, 2);
+insert into teacher values (2, 'priya', 30, 5);
+insert into teacher values (3, 'rahul', 28, 3);
+insert into teacher values (4, 'sunita', 32, 7);
+insert into teacher values (5, 'vijay', 27, 4);
+insert into teacher values (6, 'meera', 26, 2);
+
+ select * from teacher;
+ tno | tname  | age | exp 
+-----+--------+-----+-----
+   1 | amit   |  25 |   2
+   2 | priya  |  30 |   5
+   3 | rahul  |  28 |   3
+   4 | sunita |  32 |   7
+   5 | vijay  |  27 |   4
+   6 | meera  |  26 |   2
+(6 rows)
+
+
+
+create table stud(
+	sno int primary key check(sno>0),
+	sname varchar(15) not null);
+
+CREATE TABLE
+sy5=> \d stud 
+                       Table "public.stud"
+ Column |         Type          | Collation | Nullable | Default 
+--------+-----------------------+-----------+----------+---------
+ sno    | integer               |           | not null | 
+ sname  | character varying(15) |           | not null | 
+Indexes:
+    "stud_pkey" PRIMARY KEY, btree (sno)
+Check constraints:4
+    "stud_sno_check" CHECK (sno > 0)
+
+sy53=> select * from stud;
+ sno | sname 
+-----+-------
+(0 rows)
+
+ select * from stud;
+ sno | sname  
+-----+--------
+ 101 | ravi
+ 102 | neha
+ 103 | sonia
+ 104 | karan
+ 105 | pooja
+ 106 | rohit
+ 107 | anjali
+(7 rows)
+
+
+create table trsub(
+	tno int references teacher(tno),
+	sno int references stud(sno),
+	subname varchar(15) not null,
+	primary key(tno,sno));
+	
+
+CREATE TABLE
+sy53=> \d trsub;
+                       Table "public.trsub"
+ Column  |         Type          | Collation | Nullable | Default 
+---------+-----------------------+-----------+----------+---------
+ tno     | integer               |           | not null | 
+ sno     | integer               |           | not null | 
+ subname | character varying(15) |           | not null | 
+Indexes:
+    "trsub_pkey" PRIMARY KEY, btree (tno, sno)
+Foreign-key constraints:
+    "trsub_sno_fkey" FOREIGN KEY (sno) REFERENCES stud(sno)
+    "trsub_tno_fkey" FOREIGN KEY (tno) REFERENCES teacher(tno)
+
+sy53=> select * from trsub;
+ tno | sno | subname 
+-----+-----+---------
+(0 rows)
+
+insert into trsub values (4, 102, 'physics');
+insert into trsub values (4, 105, 'physics');
+insert into trsub values (5, 104, 'physics');
+insert into trsub values (6, 102, 'science');
+insert into trsub values (5, 105, 'science');
+insert into trsub values (3, 104, 'math');
+insert into trsub values (5, 106, 'math');
+insert into trsub values (6, 107, 'english');
+insert into trsub values (1, 103, 'math');
+insert into trsub values (2, 101, 'science');
+insert into trsub values (3, 106, 'english');
+insert into trsub values (4, 107, 'science');
+
+select * from trsub;
+ tno | sno | subname 
+-----+-----+---------
+   4 | 102 | physics
+   4 | 105 | physics
+   5 | 104 | physics
+   5 | 106 | math
+   6 | 107 | english
+   1 | 103 | math
+   2 | 101 | science
+   3 | 106 | english
+   4 | 107 | science
+   6 | 102 | science
+   5 | 105 | science
+   3 | 104 | math
+(12 rows)
+
+
+a)
+ select * from teacher;
+ tno | tname  | age | exp 
+-----+--------+-----+-----
+   1 | amit   |  25 |   2
+   2 | priya  |  30 |   5
+   3 | rahul  |  28 |   3
+   4 | sunita |  32 |   7
+   5 | vijay  |  27 |   4
+   6 | meera  |  26 |   2
+(6 rows)
+
+select * from trsub;
+ tno | sno | subname 
+-----+-----+---------
+   4 | 102 | physics
+   4 | 105 | physics
+   5 | 104 | physics
+   5 | 106 | math
+   6 | 107 | english
+   1 | 103 | math
+   2 | 101 | science
+   3 | 106 | english
+   4 | 107 | science
+   6 | 102 | science
+   5 | 105 | science
+   3 | 104 | math
+(12 rows)
+
+create or replace function trsubteach(subj varchar)returns text as '
+declare
+	rec record;
+	result text :=''teachers that teach ''||subj||E'' :\n'';
+	c3 cursor for 
+	select * from teacher t , trsub ts
+	where t.tno = ts.tno and ts.subname = subj;
+
+begin 
+	open c3;
+	loop
+		fetch c3 into rec;
+		exit when not found;
+		result :=result||rec.tname||E''\n'';
+	end loop;
+	close c3;
+	return result;
+end;'
+language 'plpgsql';
+
+output - 
+ select trsubteach('physics');
+          trsubteach           
+-------------------------------
+ teachers that teach physics :+
+ sunita                       +
+ sunita                       +
+ vijay                        +
+ 
+(1 row)
+
+sy53=> select trsubteach('math');
+         trsubteach         
+----------------------------
+ teachers that teach math :+
+ vijay                     +
+ amit                      +
+ rahul                     +
+ 
+
+(1 row)
+
+b)
+ select * from teacher;
+ tno | tname  | age | exp 
+-----+--------+-----+-----
+   1 | amit   |  25 |   2
+   2 | priya  |  30 |   5
+   3 | rahul  |  28 |   3
+   4 | sunita |  32 |   7
+   5 | vijay  |  27 |   4
+   6 | meera  |  26 |   2
+(6 rows)
+
+select * from trsub;
+ tno | sno | subname 
+-----+-----+---------
+   4 | 102 | physics
+   4 | 105 | physics
+   5 | 104 | physics
+   5 | 106 | math
+   6 | 107 | english
+   1 | 103 | math
+   2 | 101 | science
+   3 | 106 | english
+   4 | 107 | science
+   6 | 102 | science
+   5 | 105 | science
+   3 | 104 | math
+(12 rows)
+
+ select * from stud;
+ sno | sname  
+-----+--------
+ 101 | ravi
+ 102 | neha
+ 103 | sonia
+ 104 | karan
+ 105 | pooja
+ 106 | rohit
+ 107 | anjali
+(7 rows)
+
+create or replace function studtr(studnm varchar) returns text as'
+declare
+	rec record;
+	result text := ''Teachers that teach ''||studnm||E'' : \n'';
+	
+	c4 cursor for 
+	select * 
+	from teacher t , stud s , trsub ts 
+	where s.sno = ts.sno and t.tno = ts.tno and s.sname = studnm;
+begin 
+	open c4;
+	loop
+		fetch c4 into rec;
+		exit when not found;
+		result :=result||rec.tname||E''\n'';
+	end loop;
+	close c4;
+	return result;
+end;'
+language 'plpgsql';
+
+output - 
+
+sy53=> select studtr('ravi');
+           studtr            
+-----------------------------
+ Teachers that teach ravi : +
+ priya                      +
+ 
+(1 row)
+
+sy53=> select studtr('pooja');
+            studtr            
+------------------------------
+ Teachers that teach pooja : +
+ sunita                      +
+ vijay                       +
+ 
+(1 row)
+
+
+
+SET C
+
+create table person(
+pno int primary key check(pno>0),
+pname varchar(20) not null,
+bdt date not null,
+income int check(income>=10000));
+
+CREATE TABLE
+sy53=> select * from person;
+ pno | pname | bdt | income 
+-----+-------+-----+--------
+(0 rows)
+
+
+insert into person (pno,pname,bdt,income)values
+(12,'nisha','19-02-2003',55000),
+(14,'maya','14-09-1999',45000),
+(15,'aaradhya','24-01-1996',70000),
+(16,'vijay','05-07-2006',75000),
+(17,'khushal','06-10-2000',67000),
+(13,'joy','27-03-1986',60000),
+(18,'omkar','19-02-2006',55000),
+(20,'parth','14-09-1997',45000);
+INSERT 0 8
+sy53=> select * from person;
+ pno | pname  |    bdt     | income 
+-----+--------+------------+--------
+  12 | nisha  | 2003-02-19 |  55000
+  14 | maya   | 1999-09-14 |  45000
+  15 | aaradhya | 1996-01-24 |  70000
+  16 | vijay  | 2006-07-05 |  75000
+  17 | khushal | 2000-10-06 |  67000
+  13 | joy    | 1986-03-27 |  60000
+  18 | omkar   | 2006-02-19 |  55000
+  20 | parth  | 1997-09-14 |  45000
+
+(8 rows)
+
+
+create table area(
+aid int primary key check(aid>0),
+aname varchar(20) not null,
+atype varchar(15) not null check(atype in('urban','rural')),
+pno int references person(pno));
+
+CREATE TABLE
+sy53=> select * from area;
+ aid | aname | atype | pno 
+-----+-------+-------+-----
+(0 rows)
+
+insert into area(aid,aname,atype,pno)values
+(201,'shivaji nagar','rural',12),
+(203,'dhruv nagar','urban',14),
+(204,'uttam nagar','urban',15),
+(207,'sautha nagar','urban',17),
+(219,'cidco','rural',12),
+(222,'jail road','urban',13),
+(216,'nashik road','rural',16);
+
+INSERT 0 7
+sy53=> select * from area;
+ aid |     aname     | atype | pno 
+-----+---------------+-------+-----
+ 201 | shivaji nagar | rural |  12
+ 203 | dhruv nagar   | urban |  14
+ 204 | uttam nagar   | urban |  15
+ 207 | sautha nagar  | urban |  17
+ 219 | cidco         | rural |  12
+ 222 | jail road     | urban |  13
+ 216 | nashik road   | rural |  16
+(7 rows)
+
+--a)
+create or replace function disp(int)returns text as'
+declare
+		mon alias for $1;
+		cur1 cursor for select pname,bdt
+		from person 
+		where extract(month from bdt)=mon;
+		prec record;
+		result text :=''Person name    Birth date'';
+begin
+		open cur1;
+		loop
+			fetch cur1 into prec;
+			exit when NOT FOUND ;
+		result:=result||E''\n''||prec.pname||''               ''||prec.bdt;
+		end loop;
+		close cur1;
+		return result;
+end;
+'language 'plpgsql';
+
+--output
+
+sy53=> select disp(02);
+              disp              
+--------------------------------
+ Person name    Birth date     +
+ nisha               2003-02-19+
+ omkar               2006-02-19
+(1 row)
+
+sy53=> select disp(09);
+              disp              
+--------------------------------
+ Person name    Birth date     +
+ maya               1999-09-14 +
+ parth               1997-09-14
+(1 row)
+
+sy53=> select disp(10);
+              disp               
+---------------------------------
+ Person name    Birth date      +
+ khushal               2000-10-06
+
+
+--b)
+create or replace function up(varchar(15))returns text as'
+declare
+		aa alias for $1;
+		cur2 cursor for select pname
+		from person p,area a
+		where p.pno=a.pno and atype=aa; 
+		pnm person.pname%type;
+		result text :=''Person name    Area type'';
+begin
+		open cur2;
+		loop
+			fetch cur2 into pnm;
+			exit when NOT FOUND ;
+		result:=result||E''\n''||pnm||''               ''||aa;
+		end loop;
+		close cur2;
+		return result;
+end;
+'language 'plpgsql';
+
+CREATE FUNCTION
+sy53=> select up('urban');
+             up             
+----------------------------
+ Person name    Area type  +
+ maya               urban  +
+ aaradhya             urban+
+ khushal             urban+
+ joy                urban
+(1 row)
+
+sy53=> select up('rural');
+            up             
+---------------------------
+ Person name    Area type +
+ nisha               rural+
+ nisha               rural+
+ vijay               rural
+(1 row)
+
+
+--c)
+create or replace function pin()returns text as'
+declare
+		cur3 cursor for select pname,income
+		from person 
+		where income between 65000 and 100000;
+		pdt record;
+		result text :=''Person name      Income'';
+begin
+		open cur3;
+		loop
+			fetch cur3 into pdt;
+			exit when NOT FOUND ;
+		result:=result||E''\n''||pdt.pname||''              ''||pdt.income;
+		end loop;
+		close cur3;
+		return result;
+end;
+'language 'plpgsql';
+
+CREATE FUNCTION
+sy53=> select pin();
+            pin             
+----------------------------
+ Person name         Income     +
+ aaradhya               70000+
+ vijay                75000 +
+ khushal               67000
+(1 row)
+
+
+
+
+
+set b
+create table teacher(
+tno int primary key check(tno>0),
+tname varchar(20) not null ,
+age int check(age>21),
+exp int check(exp>2));
+
+CREATE TABLE
+sy53=> select * from teacher;
+ tno | tname | age | exp 
+-----+-------+-----+-----
+(0 rows)
+insert into teacher(tno,tname,age,exp)values
+(112,'Khushal',25,3),
+(114,'Aaradhya',23,5),
+(113,'Neha',45,7),
+(115,'Vijay',37,6),
+(117,'Vishal',25,5),
+(118,'mahesh',57,11);
+
+INSERT 0 6
+sy53=> select * from teacher;
+ tno |  tname   | age | exp 
+-----+----------+-----+-----
+ 112 | Khushal  |  25 |   3
+ 114 | Aaradhya |  23 |   5
+ 113 | Neha     |  45 |   7
+ 115 | Vijay    |  37 |   6
+ 117 | Vishal   |  25 |   5
+ 118 | mahesh   |  57 |  11
+(6 rows)
+
+
+create table stud(
+sno int primary key check(sno>0),
+sname varchar(15) not null);
+
+CREATE TABLE
+sy53=> select * from stud;
+ sno | sname 
+-----+-------
+(0 rows)
+
+insert into stud(sno,sname)values
+(202,'nisha'),
+(204,'omkar'),
+(215,'isha'),
+(245,'hetal'),
+(212,'hardik'),
+(214,'maya'),
+(222,'geeta');
+
+INSERT 0 7
+sy53=> select * from stud;
+ sno | sname  
+-----+--------
+ 202 | nisha
+ 204 | omkar
+ 215 | isha
+ 245 | hetal
+ 212 | hardik
+ 214 | maya
+ 222 | geeta
+(7 rows)
+
+create table ts(
+tno int references teacher(tno),
+sno int references stud(sno),
+subject varchar(15) not null check(subject in('math','science','hindi','english','marathi','hist','geo')));
+
+CREATE TABLE
+sy68=> select * from ts;
+ tno | sno | subject 
+-----+-----+---------
+(0 rows)
+
+
+insert into ts(tno,sno,subject)values
+(112,202,'math'),
+(113,215,'english'),
+(115,204,'hist'),
+(117,212,'geo'),
+(114,222,'geo'),
+(118,214,'hindi'),
+(117,212,'math'),
+(112,245,'marathi');
+INSERT 0 8
+sy53=> select * from ts;
+ tno | sno | subject 
+-----+-----+---------
+ 112 | 202 | math
+ 113 | 215 | english
+ 115 | 204 | hist
+ 117 | 212 | geo
+ 114 | 222 | geo
+ 118 | 214 | hindi
+ 117 | 212 | math
+ 112 | 245 | marathi
+(8 rows)
+
+--1)
+create or replace function dtnm(varchar(15))returns text as'
+declare
+		sub alias for $1;
+		c3 cursor for select tname
+		from teacher t,ts 
+		where t.tno=ts.tno and subject=sub;
+		result text :=''Teacher name    Subject'';
+		tnm teacher.tname%type;	
+begin
+		open c3;
+		loop
+			fetch c3 into tnm;
+			exit when NOT FOUND ;
+		result:=result||E''\n''||tnm||''              ''||sub;
+		end loop;
+		close c3;
+		return result;
+end;
+'language 'plpgsql';
+
+
+CREATE FUNCTION
+sy53=> select dtnm('math');
+           dtnm           
+--------------------------
+ Teacher name    Subject +
+ Khushal              math+
+ Vishal              math
+(1 row)
+
+sy53=> select dtnm('geo');
+          dtnm           
+-------------------------
+ Teacher name    Subject+
+ Vishal              geo+
+ Aaradhya              geo
+(1 row)
+
+sy53=> select dtnm('english');
+           dtnm            
+---------------------------
+ Teacher name    Subject  +
+ Neha              english
+(1 row)
+
+--2)
+create or replace function stnm(varchar(15))returns text as'
+declare
+		nm alias for $1;
+		c4 cursor for select tr.tno,tname,subject
+		from teacher tr,stud s,ts 
+		where tr.tno=ts.tno and s.sno=ts.sno and sname=nm;
+		tdt record;
+		result text :=''Teacher id     Teacher name    Subject     Student name '';
+begin
+		open c4;
+		loop
+			fetch c4 into tdt;
+			exit when NOT FOUND ;
+		      result:=result||E''\n''||tdt.tno||''            ''||tdt.tname||''             ''||tdt.subject||''           ''||nm; 
+		end loop;
+		close c4;
+		return result;
+end;
+'language 'plpgsql';
+
+CREATE FUNCTION
+sy53=> select stnm('maya');
+                           stnm                           
+----------------------------------------------------------
+ Teacher id     Teacher name    Subject     Student name +
+ 118            mahesh             hindi           maya
+(1 row)
+
+sy53=> select stnm('nisha');
+                           stnm                           
+----------------------------------------------------------
+ Teacher id     Teacher name    Subject     Student name +
+ 112            Khushal             math           nisha
+(1 row)
+
+
+

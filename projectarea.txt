@@ -1,0 +1,292 @@
+//NAME:-OMKAR JITENDRA MAHAJAN
+//BATCH-b3
+//roll no:-53
+//assignment:-3
+
+seta)
+create table project(
+pno int primary key check(pno>0),
+pname varchar(20) not null unique ,
+ptype varchar(15) not null check(ptype in('stat','math','DS','DBMS','HTML')),
+dur int check(dur<6));
+
+CREATE TABLE
+sy53=> select * from project;
+ pno | pname | ptype | dur 
+-----+-------+-------+-----
+(0 rows)
+
+INSERT 0 5
+sy53=> select *from project;
+ pno | pname | ptype | dur 
+-----+-------+-------+-----
+ 102 | ab    | stat  |   3
+ 104 | aa    | math  |   2
+ 106 | ac    | DS    |   3
+ 109 | cd    | math  |   4
+ 125 | ba    | HTML  |   5
+(5 rows)
+
+
+create table empl(
+eid int primary key check(eid>0),
+ename varchar(20) not null,
+jdate date check(jdate< current_date));
+
+sy53=> select *from empl;
+ eid |  ename   |   jdate    
+-----+----------+------------
+  11 | khushal  | 2023-02-12
+  12 | aaradhya | 2025-11-22
+  16 | maya     | 2011-10-15
+  19 | omkar    | 2024-06-08
+  15 | nisha    | 2012-05-19
+(5 rows)
+
+
+CREATE TABLE
+sy53=> select * from empl;
+ eid | ename | jdate 
+-----+-------+-------
+(0 rows)
+
+INSERT 0 5
+sy53=> select *from empl;
+ eid | ename  |   jdate    
+-----+--------+------------
+  11 | khushi | 2023-02-12
+  12 | aarthi | 2025-11-22
+  16 | maya   | 2011-10-15
+  19 | ram    | 2024-06-08
+  15 | nisha  | 2012-05-19
+(5 rows)
+
+
+create table pe(
+pno int references project(pno),
+eid int references empl(eid),
+sdate date check(sdate <= current_date));
+
+CREATE TABLE
+sy53=> select * from pe;
+ pno | eid | sdate 
+-----+-----+-------
+(0 rows)
+
+INSERT 0 7
+sy53=> select *from pe;
+ pno | eid |   sdate    
+-----+-----+------------
+ 102 |  11 | 2025-12-11
+ 125 |  19 | 2026-01-24
+ 104 |  12 | 2026-01-17
+ 109 |  11 | 2025-10-09
+ 106 |  15 | 2026-02-03
+ 125 |  19 | 2023-08-06
+ 102 |  16 | 2025-11-27
+(7 rows)
+
+
+insert into project values 
+(102,'ab','stat',3),
+(104,'aa','math',2),
+(106,'ac','DS',3),
+(109,'cd','math',4),
+(125,'ba','HTML',5);
+
+insert into empl values 
+(11,'khushal','12-02-2023'),
+(12,'aaradhya','22-11-2025'),
+(16,'maya','15-10-2011'),
+(19,'omkar','08-06-2024'),
+(15,'nisha','19-05-2012');
+
+
+insert into pe values
+(102,11,'11-12-2025'),
+(125,19,'24-01-2026'),
+(104,12,'17-01-2026'),
+(109,11,'09-10-2025'),
+(106,15,'03-02-2026'),
+(125,19,'06-08-2023'),
+(102,16,'27-11-2025');
+
+
+1)
+create or replace function pdt(varchar(20))returns text as'
+declare
+    prec record;
+    ecnt int:=0;
+    result text:=''Project name  Project no  Employee name  start date  Total employee'';
+begin
+          select count(*) into ecnt
+          from project
+          where pname=$1;
+          if NOT FOUND then
+              raise exception''Project name % is Invalid!!'',$1;
+          end if;
+          ecnt := 0;
+          for prec in
+	        select p.pno,pname,ename,sdate
+	        from project p,empl e,pe
+	        where p.pno=pe.pno and e.eid=pe.eid and pname=$1 
+          loop
+	        result := result ||E''\n''||prec.pname||''            ''||prec.pno||''             ''||prec.ename||''        ''||prec.sdate;
+	        ecnt := ecnt+1;
+          end loop;
+          result := result || E''\n Number of employees working on this project : "||ecnt;
+          return result;
+
+end;
+'language'plpgsql';
+
+CREATE FUNCTION
+
+sy53=> select pdt('ab');
+                                 pdt                                 
+---------------------------------------------------------------------
+ Project name  Project no  Employee name  start date  Total employee+
+ ab            102             khushal        2025-12-11       1    +
+ ab            102             maya        2025-11-27       1
+(1 row)
+
+sy53=> select pdt('cc');
+ERROR:  Project name cc is Invalid!!
+CONTEXT:  PL/pgSQL function pdt(character varying) line 11 at RAISE
+
+02)
+create or replace function empdt(int)returns int as'
+declare
+    eno alias for $1;
+    pcnt int:=0;
+begin
+     select count(*) into pcnt
+     from empl e,pe
+     where e.eid=pe.eid and e.eid=eno;
+     if pcnt=0 then
+          raise exception''Employee number % is Invalid!!'',eno;
+     else
+          raise notice'' The number of project of employee having eid % = %'',eno,pcnt;
+     end if;
+     return pcnt;
+end;
+'language'plpgsql';
+
+CREATE FUNCTION
+sy53=> select empdt(17);
+ERROR:  Employee number 17 is Invalid!!
+CONTEXT:  PL/pgSQL function empdt(integer) line 10 at RAISE
+sy53=> select empdt(19);
+NOTICE:   The number of project of employee having eid 19 = 2
+ empdt 
+-------
+     2
+(1 row)
+
+
+
+SETB
+
+create table person(
+pno int primary key check(pno>0),
+pname varchar(20) not null,
+bdt date not null,
+income int check(income>=10000));
+
+sy53=> insert into person (pno,pname,bdt,income)values
+(12,'nisha','19-02-2003',55000),
+(14,'maya','14-09-1999',45000),
+(15,'aaradhya','24-01-1996',70000),
+(16,'vijay','05-07-2006',75000),
+(17,'khushal','06-10-2000',67000),
+(13,'joy','27-03-1986',60000),
+(18,'omkar','19-02-2006',55000),
+(20,'parth','14-09-1997',45000);
+INSERT 0 8
+
+create table area(
+aid int primary key check(aid>0),
+aname varchar(20) not null,
+atype varchar(15) not null check(atype in('urban','rural')),
+pno int references person(pno));
+
+insert into area(aid,aname,atype,pno)values
+(201,'shivaji nagar','rural',12),
+(203,'dhruv nagar','urban',14),
+(204,'uttam nagar','urban',15),
+(207,'sautha nagar','urban',17),
+(219,'cidco','rural',12),
+(222,'jail road','urban',13),
+(216,'nashik road','rural',16);
+INSERT 0 7
+
+sy53=>  select * from area;
+ aid |     aname     | atype | pno 
+-----+---------------+-------+-----
+ 201 | shivaji nagar | rural |  12
+ 203 | dhruv nagar   | urban |  14
+ 204 | uttam nagar   | urban |  15
+ 207 | sautha nagar  | urban |  17
+ 219 | cidco         | rural |  12
+ 222 | jail road     | urban |  13
+ 216 | nashik road   | rural |  16
+(7 rows)
+
+
+sy53=>  select * from person;
+ pno |  pname   |    bdt     | income 
+-----+----------+------------+--------
+  12 | nisha    | 2003-02-19 |  55000
+  14 | maya     | 1999-09-14 |  45000
+  15 | aaradhya | 1996-01-24 |  70000
+  16 | vijay    | 2006-07-05 |  75000
+  17 | khushal  | 2000-10-06 |  67000
+  13 | joy      | 1986-03-27 |  60000
+  18 | omkar    | 2006-02-19 |  55000
+  20 | parth    | 1997-09-14 |  45000
+(8 rows)
+
+1)
+create or replace function apdt(varchar(15))returns text as'
+declare
+    cnt int :=0;
+    anm alias for $1;
+    prec record;
+    result text:=''Area name   Person name  Person no   Birth date      Income  '';
+begin
+          select count(*) into cnt
+          from area
+          where aname=$1;
+          if cnt=0 then
+              raise exception''Area name  % is Invalid!!'',$1;
+          end if;
+          for prec in
+	        select p.pno,aname,pname,bdt,income
+	        from person p,area a
+	        where p.pno=a.pno and aname=$1 
+          loop
+	        result := result ||E''\n''||prec.aname||''          ''||prec.pname||''         ''||prec.pno||''       ''||prec.bdt||''        ''||prec.income;
+          end loop;
+          return result;
+end;
+'language'plpgsql';
+
+CREATE FUNCTION
+sy53=> select apdt('uttam');
+ERROR:  Area name  uttam is Invalid!!
+CONTEXT:  PL/pgSQL function apdt(character varying) line 12 at RAISE
+sy53=> select apdt('jail road');
+                              apdt                               
+-----------------------------------------------------------------
+ Area name   Person name  Person no   Birth date      Income    +
+ jail road          joy         13       1986-03-27        60000
+(1 row)
+
+sy53=> select apdt('shivaji nagar');
+                                 apdt                                  
+-----------------------------------------------------------------------
+ Area name   Person name  Person no   Birth date      Income          +
+ shivaji nagar          nisha         12       2003-02-19        55000
+(1 row)
+
+

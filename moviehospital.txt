@@ -1,0 +1,311 @@
+seta
+create table movie(
+m_name varchar(25) primary key not null,
+release_yr int,
+budget int check(budget>10000));
+
+create table actor(
+a_name varchar(25) primary key not null,
+role varchar(20) not null,
+charges int,
+add varchar(25));
+
+create table m_actor(
+m_name varchar(25) references movie(m_name),
+a_name varchar(25) references actor(a_name));
+
+insert into movie values
+('KGF',2016,7000000),
+('RRR',2009,3000000),
+('PK',2014,6400000),
+('Jawan2',2023,2500000);
+
+insert into actor values
+('Aamir Khan','Lead',2000000,'Mumbai'),
+('shah rukh khan','Hero',3000000,'Mumbai'),
+('Yash','Lead',2500000,'Bangalore'),
+('Deepika Padukone','Heroine',7000000,'Pune');
+
+insert into m_actor values
+('KGF','Aamir Khan'),
+('RRR','shah rukh khan'),
+('Jawan2','Deepika Padukone'),
+('RRR','Deepika Padukone');
+
+sy53=> select * from actor;
+      a_name      |  role   | charges |    add    
+------------------+---------+---------+-----------
+ Aamir Khan       | Lead    | 2000000 | Mumbai
+ shah rukh khan   | Hero    | 3000000 | Mumbai
+ Yash             | Lead    | 2500000 | Bangalore
+ Deepika Padukone | Heroine | 7000000 | Pune
+(4 rows)
+
+
+sy53=> select * from movie;
+ m_name | release_yr | budget  
+--------+------------+---------
+ KGF    |       2016 | 7000000
+ RRR    |       2009 | 3000000
+ PK     |       2014 | 6400000
+ Jawan2 |       2023 | 2500000
+(4 rows)
+
+sy53=> select * from m_actor;
+ m_name |      a_name      
+--------+------------------
+ KGF    | Aamir Khan
+ RRR    | shah rukh khan
+ Jawan2 | Deepika Padukone
+ RRR    | Deepika Padukone
+
+#Set-A
+#Q.1
+
+CREATE OR REPLACE FUNCTION actor_delete()
+RETURNS TRIGGER AS '
+BEGIN
+    RAISE NOTICE ''Actor deleted successfully'';
+    RETURN OLD;
+END;
+'LANGUAGE 'plpgsql';
+CREATE TRIGGER trg_actor
+AFTER DELETE ON Actor
+FOR EACH ROW
+EXECUTE PROCEDURE actor_delete();
+
+#OUTPUT
+CREATE FUNCTION
+CREATE TRIGGER
+sy53=> delete from actor where a_name='Yash';
+NOTICE:  Actor deleted successfully
+DELETE 1
+sy53=> select * from actor;
+      a_name      |  role   | charges |  add   
+------------------+---------+---------+--------
+ Aamir Khan       | Lead    | 2000000 | Mumbai
+ shah rukh khan   | Hero    | 3000000 | Mumbai
+ Deepika Padukone | Heroine | 7000000 | Pune
+(3 rows)
+
+
+#Q.2
+
+CREATE OR REPLACE FUNCTION movie_delete()
+RETURNS TRIGGER AS '
+BEGIN
+    RAISE NOTICE ''Movie deleted successfully'';
+    RETURN OLD;
+END;
+'LANGUAGE 'plpgsql';
+CREATE TRIGGER trg_movie
+AFTER DELETE ON Movie
+FOR EACH ROW
+EXECUTE PROCEDURE movie_delete();
+
+#OUTPUT
+CREATE FUNCTION
+CREATE TRIGGER
+sy53=> delete from movie  where m_name='PK';
+NOTICE:  Movie deleted successfully
+DELETE 1
+sy53=> select * from movie;
+ m_name | release_yr | budget  
+--------+------------+---------
+ KGF    |       2016 | 7000000
+ RRR    |       2009 | 3000000
+ Jawan2 |       2023 | 2500000
+(3 rows)
+
+
+#Q.3
+CREATE OR REPLACE FUNCTION check_budget()
+RETURNS TRIGGER AS '
+BEGIN
+    IF NEW.budget < 100000 THEN
+        RAISE EXCEPTION ''Budget must be greater than 1,00,000'';
+    END IF;
+    RETURN NEW;
+END;
+'LANGUAGE 'plpgsql';
+CREATE TRIGGER trg_check_budget
+BEFORE INSERT ON Movie
+FOR EACH ROW
+EXECUTE PROCEDURE check_budget();
+
+#OUTPUT
+
+
+sy53=> insert into movie values ('3 idiots',2009,23000);
+ERROR:  Budget must be greater than 1,00,000
+
+sy53=> insert into movie values ('3 idiots',2009,2300000);
+INSERT 0 1
+sy53=> select * from movie;
+  m_name  | release_yr | budget  
+----------+------------+---------
+ KGF      |       2016 | 7000000
+ PK       |       2014 | 6400000
+ Jawan2   |       2023 | 2500000
+ 3 idiots |       2009 | 2300000
+(4 rows)
+
+
+
+
+
+set b)
+create table hospitall(hno int primary key check (hno>0),
+                        h_name varchar(20) not null,
+                        city varchar(10) not null);
+CREATE TABLE
+sy53=> \d hospitall;
+                    Table "public.hospitall"
+ Column |         Type          | Collation | Nullable | Default 
+--------+-----------------------+-----------+----------+---------
+ hno    | integer               |           | not null | 
+ h_name | character varying(20) |           | not null | 
+ city   | character varying(10) |           | not null | 
+Indexes:
+    "hospitall_pkey" PRIMARY KEY, btree (hno)
+Check constraints:
+    "hospitall_hno_check" CHECK (hno > 0)
+
+select *from hospitall;
+ hno | h_name | city 
+-----+--------+------
+(0 rows)
+
+insert into hospitall values (1, 'apollo', 'mumbai');
+insert into hospitall values (2, 'citycare', 'pune');
+insert into hospitall values (3, 'fortis', 'delhi');
+insert into hospitall values (4, 'medplus', 'nashik');
+insert into hospitall values (5, 'global', 'chennai');
+
+ select * from hospitall;
+ hno |  h_name  |  city   
+-----+----------+---------
+   1 | apollo   | mumbai
+   2 | citycare | pune
+   3 | fortis   | delhi
+   4 | medplus  | nashik
+   5 | global   | chennai
+(5 rows)
+
+create table doctr(dno int primary key check(dno>0),
+                        d_name varchar(25) not null,
+                        speciality varchar(25) check( speciality in ('cardiology', 'neurology', 'orthopedic', 'pediatrics','dermatology', 'gynecology', 'ent')), 
+                        charges int check(charges>0),
+                        hno int references hospitall(hno));
+CREATE TABLE
+
+\d doctr;
+                        Table "public.doctr"
+   Column   |         Type          | Collation | Nullable | Default 
+------------+-----------------------+-----------+----------+---------
+ dno        | integer               |           | not null | 
+ d_name     | character varying(25) |           | not null | 
+ speciality | character varying(25) |           |          | 
+ charges    | integer               |           |          | 
+ hno        | integer               |           |          | 
+Indexes:
+    "doctr_pkey" PRIMARY KEY, btree (dno)
+Check constraints:
+    "doctr_charges_check" CHECK (charges > 0)
+    "doctr_dno_check" CHECK (dno > 0)
+    "doctr_speciality_check" CHECK (speciality::text = ANY (ARRAY['cardiology'::character varying, 'neurology'::character varying, 'orthopedic'::character varying, 'pediatrics'::character varying, 'dermatology'::character varying, 'gynecology'::character varying, 'ent'::character varying]::text[]))
+Foreign-key constraints:
+    "doctr_hno_fkey" FOREIGN KEY (hno) REFERENCES hospitall(hno)
+
+select * from doctr;
+ dno | d_name | speciality | charges | hno 
+-----+--------+------------+---------+-----
+(0 rows)
+
+insert into doctr values (101, 'dr.amit', 'cardiology', 300, 1);
+insert into doctr values (102, 'dr.riya', 'neurology', 350, 2);
+insert into doctr values (103, 'dr.rohan', 'orthopedic', 250, 3);
+insert into doctr values (104, 'dr.sneha', 'pediatrics', 200, 4);
+insert into doctr values (105, 'dr.vikram', 'dermatology', 150, 1);
+insert into doctr values (106, 'dr.priya', 'gynecology', 280, 5);
+insert into doctr values (107, 'dr.arjun', 'ent', 220, 2);
+
+select *from doctr;
+ dno |  d_name   | speciality  | charges | hno 
+-----+-----------+-------------+---------+-----
+ 101 | dr.amit   | cardiology  |     300 |   1
+ 102 | dr.riya   | neurology   |     350 |   2
+ 103 | dr.rohan  | orthopedic  |     250 |   3
+ 104 | dr.sneha  | pediatrics  |     200 |   4
+ 105 | dr.vikram | dermatology |     150 |   1
+ 106 | dr.priya  | gynecology  |     280 |   5
+ 107 | dr.arjun  | ent         |     220 |   2
+(7 rows)
+
+a]
+
+create or replace function ftbd() returns trigger as '
+begin 
+	if new.charges<0 then 
+		raise exception ''charges should not be negative'';
+	end if ;
+	return new;
+end ;'
+language 'plpgsql';
+
+create trigger tbd
+before insert or update on doctr
+for each row
+execute function ftbd();
+
+select * from doctr;
+ dno |  d_name   | speciality  | charges | hno 
+-----+-----------+-------------+---------+-----
+ 101 | dr.amit   | cardiology  |     300 |   1
+ 102 | dr.riya   | neurology   |     350 |   2
+ 103 | dr.rohan  | orthopedic  |     250 |   3
+ 104 | dr.sneha  | pediatrics  |     200 |   4
+ 105 | dr.vikram | dermatology |     150 |   1
+ 106 | dr.priya  | gynecology  |     280 |   5
+ 107 | dr.arjun  | ent         |     220 |   2
+(7 rows)
+
+sy53=> insert into doctor values(108,'dr rajesh','orthopedic',-1,3);
+sy53=> insert into doctr values(108,'dr rajesh','orthopedic',-1,3);
+ERROR:  charges should not be negative
+CONTEXT:  PL/pgSQL function ftba() line 4 at RAISE
+
+
+b]
+
+create or replace function ftbc() returns trigger as '
+begin 
+	if new.charges>400 then 
+		raise exception ''charges should not be greater than 400'';
+	end if ;
+	return new;
+end ;'
+language 'plpgsql';
+
+create trigger tbc
+before insert or update on doctr
+for each row
+execute function ftbc();
+
+
+ select *from doctr;
+ dno |  d_name   | speciality  | charges | hno 
+-----+-----------+-------------+---------+-----
+ 101 | dr.amit   | cardiology  |     300 |   1
+ 102 | dr.riya   | neurology   |     350 |   2
+ 103 | dr.rohan  | orthopedic  |     250 |   3
+ 104 | dr.sneha  | pediatrics  |     200 |   4
+ 105 | dr.vikram | dermatology |     150 |   1
+ 106 | dr.priya  | gynecology  |     280 |   5
+ 107 | dr.arjun  | ent         |     220 |   2
+(7 rows)
+
+sy53=> insert into doctr values(109,'dr ramesh','ent',500,3);
+ERROR:  charges should not be greater than 400
+CONTEXT:  PL/pgSQL function ftbb() line 4 at RAISE
+

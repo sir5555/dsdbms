@@ -1,0 +1,536 @@
+batch:b3
+name:omkar jitendra mahajan
+roll no. :53
+\a
+Create or replace procedure asm(in x int,in y int,in z int,inout num1 int default 0,inout num2 int default 0 ,inout num3 int default 0)as'
+BEGIN
+	num1=x+y+z;
+	num2=x-y-z;
+	num3=x*y*z;
+	raise notice''ADD :% + % + % = % \n sub : % - % - %= % \n multi: %*%*%=%'',x,y,z,num1,x,y,z,num2,x,y,z,num3;
+END;
+'language 'plpgsql';
+/* output 
+
+call asm(2,3,4);
+NOTICE:  ADD :2 + 3 + 4 = 9 \n sub : 2 - 3 - 4= -5 \n multi: 2*3*4=24
+ num1 | num2 | num3 
+------+------+------
+    9 |   -5 |   24
+(1 row)
+*/
+\b
+Create or replace procedure div(in x int,in y int,inout num1 int default 0)as'
+BEGIN
+	if(y=0) then
+	   raise notice ''error...divided by zero'';
+	else
+	   num1= x/y;
+	   raise notice''div:%/%=%'',x,y,num1;
+	end if;
+END;
+'language 'plpgsql';
+\*
+output
+CREATE PROCEDURE
+sy53=> call div(3,0);
+NOTICE:  error...divided by zero
+ num1 
+------
+    0
+(1 row)
+
+sy53=> call div(11,3);
+NOTICE:  div:11/3=3
+ num1 
+------
+    3
+(1 row)
+*\
+
+create table dept(
+dno int primary key,
+dname varchar(15),
+emn varchar(20),
+city char(10));
+
+create or replace procedure  insert ( in dno int, in dname varchar(15), in emn varchar(20), in city char(10) )as'
+begin
+      insert into dept values(dno, dname, emn, city);
+end;
+'language'plpgsql';
+
+
+/* output
+/* c*/
+sy53=> create table dept(
+dno int primary key,
+dname varchar(15),
+emn varchar(20),
+city char(10));
+CREATE TABLE
+sy53=> \d dept;
+                       Table "public.dept"
+ Column |         Type          | Collation | Nullable | Default 
+--------+-----------------------+-----------+----------+---------
+ dno    | integer               |           | not null | 
+ dname  | character varying(15) |           |          | 
+ emn    | character varying(20) |           |          | 
+ city   | character(10)         |           |          | 
+Indexes:
+    "dept_pkey" PRIMARY KEY, btree (dno)
+
+sy53=> select *from dept;
+ dno | dname | emn | city 
+-----+-------+-----+------
+(0 rows)
+
+CREATE PROCEDURE
+sy53=> call insert(1,'cs','amit','nashik');
+CALL
+sy53=> call insert(2,'maths','pooja','pune');
+CALL
+sy53=> call insert(3,'zoology','teju','mumbai');
+CALL
+sy53=> call insert(4,'biology','gauri','delhi');
+CALL
+sy53=> call insert(5,'sports','joy','kolkata');
+CALL
+sy53=> select *from dept;
+ dno |  dname  |  emn  |    city    
+-----+---------+-------+------------
+   1 | cs      | amit  | nashik    
+   2 | maths   | pooja | pune      
+   3 | zoology | teju  | mumbai    
+   4 | biology | gauri | delhi     
+   5 | sports  | joy   | kolkata   
+(5 rows)
+
+*/
+
+create or replace procedure dpt (in cty char(10), inout cc int default 0)as'
+begin
+      select count(*) into cc
+      from dept
+      where city=cty;
+end;
+'language'plpgsql';
+
+/*
+
+CREATE PROCEDURE
+sy4=> call dpt('pune');
+ cc 
+----
+  1
+(1 row)
+
+sy53=> call dpt('hyderabad');
+ cc 
+----
+  0
+(1 row)
+
+
+/*SET B*/
+create table route6(
+rtno int primary key check(rtno>0),
+source varchar(20) NOT NULL,
+dest varchar(20) NOT NULL check(source<>dest),
+nstation int NOT NULL check(nstation>0));
+
+create table bus6(
+bno int primary key check(bno>0),
+capacity int NOT NULL,
+depo_name varchar(20) NOT NULL,
+rtno int references route(rtno));
+
+
+create or replace procedure route5(in rtno int, in source varchar(20),in dest varchar(20),in nstation int)as'
+begin
+      insert into route5 values(rtno, source, dest, nstation);
+end;
+'language'plpgsql';
+
+/* output
+CREATE PROCEDURE
+sy53=> call route(101,'pune','nsk',4);
+CALL
+sy53=> call route(102,'delhi','mumbai',3);
+CALL
+sy53=> call route(103,'palghar','goa',6);
+CALL
+sy53=> call route(104,'nskrd','ashokngr',8);
+CALL
+sy53=> call route(105,'nimani','abbcircle',5);
+CALL
+sy53=> select * from route;
+ rtno | source  |   dest    | nstation 
+------+---------+-----------+----------
+  101 | pune    | nsk       |        4
+  102 | delhi   | mumbai    |        3
+  103 | palghar | goa       |        6
+  104 | nskrd   | ashokngr  |        8
+  105 | nimani  | abbcircle |        5
+(5 rows)
+*/
+
+create or replace procedure bus(in bno int, in capacity int ,in depo_name varchar(20),in rtno int)as'
+begin
+      insert into bus values(bno, capacity, depo_name, rtno);
+end;
+'language'plpgsql';
+/* output:-
+CREATE PROCEDURE
+sy53=> call bus(1,50,'nskrd',101);
+CALL
+sy53=> call bus(2,20,'swargate',102);
+CALL
+sy53=> call bus(3,40,'sinnar',103);
+CALL
+sy53=> call bus(4,30,'phathrdi',104);
+CALL
+sy53=> call bus(5,10,'mumbainaka',105);
+CALL
+sy53=> call bus(6,25,'dwarka',104);
+CALL
+sy53=> call bus(7,35,'nimani',101);
+CALL
+sy53=> select * from bus;
+ bno | capacity | depo_name  | rtno 
+-----+----------+------------+------
+   1 |       50 | nskrd      |  101
+   2 |       20 | swargate   |  102
+   3 |       40 | sinnar     |  103
+   4 |       30 | phathrdi   |  104
+   5 |       10 | mumbainaka |  105
+   6 |       25 | dwarka     |  104
+   7 |       35 | nimani     |  101
+(7 rows)
+*/
+
+//a)
+create or replace procedure bus_info(in route_no int)as'
+declare
+       total_bus int;
+begin
+      select count(*) into total_bus
+      from bus
+      where rtno=route_no;
+      raise notice''Number of buses running on route % is % '',route_no,total_bus;
+end;
+'language'plpgsql';
+
+/* output
+CREATE PROCEDURE
+sy53=> call bus_info(101);
+NOTICE:  Number of buses running on route 101 is 2 
+CALL
+sy53=> call bus_info(103);
+NOTICE:  Number of buses running on route 103 is 1 
+CALL
+
+'language'plpgsql';
+CREATE PROCEDURE
+sy53=> call bus_info(101);
+NOTICE:  Number of buses running on route 101 is 2 
+CALL
+sy53=> call bus_info(103);
+NOTICE:  Number of buses running on route 103 is 1 
+CALL
+*/
+
+//b)
+create or replace procedure upd_src(in route_no int,new_src varchar(20))as'
+begin
+      update route
+      set source=new_src
+      where rtno=route_no;
+      raise notice''The source of rtno % is updated sucessfully '',route_no;
+end;
+'language'plpgsql';
+/* output:-
+sy53=> create or replace procedure upd_src(in route_no int,new_src varchar(20))as'
+begin
+      update route
+      set source=new_src
+      where rtno=route_no;
+      raise notice''The source of rtno % is updated sucessfully '',route_no;
+end;
+'language'plpgsql';
+CREATE PROCEDURE
+sy53=> call upd_src(101,'mumbai');
+NOTICE:  The source of rtno 101 is updated sucessfully 
+CALL
+sy53=> select *from route;
+ rtno | source  |   dest    | nstation 
+------+---------+-----------+----------
+  102 | delhi   | mumbai    |        3
+  103 | palghar | goa       |        6
+  104 | nskrd   | ashokngr  |        8
+  105 | nimani  | abbcircle |        5
+  101 | mumbai  | nsk       |        4
+(5 rows)
+
+sy53=> call upd_src(102,'nagpur');
+NOTICE:  The source of rtno 102 is updated sucessfully 
+CALL
+sy53=> select *from route;
+ rtno | source  |   dest    | nstation 
+------+---------+-----------+----------
+  103 | palghar | goa       |        6
+  104 | nskrd   | ashokngr  |        8
+  105 | nimani  | abbcircle |        5
+  101 | mumbai  | nsk       |        4
+  102 | nagpur  | mumbai    |        3
+(5 rows)
+
+
+*/
+
+set B(b)
+
+create table patient(
+pno int primary key check(pno>0),
+pname varchar(20) NOT NULL,
+paddr varchar(20) NOT NULL);
+
+create table doctor(
+dno int primary key check(dno>0),
+dname varchar(20) NOT NULL,
+daddr varchar(20) NOT NULL,
+city varchar(25));
+
+create table ptdr(
+disease varchar(20) NOT NULL,
+no_visit int NOT NULL check (no_visit>0),
+pno int references patient(pno),
+dno int references doctor(dno),
+primary key(pno,dno));
+
+/* output:-
+sy53=> create table doctor(
+dno int primary key check(dno>0),
+dname varchar(20) NOT NULL,
+daddr varchar(20) NOT NULL,
+city varchar(25));
+CREATE TABLE
+sy53=> \d doctor;
+                      Table "public.doctor"
+ Column |         Type          | Collation | Nullable | Default 
+--------+-----------------------+-----------+----------+---------
+ dno    | integer               |           | not null | 
+ dname  | character varying(20) |           | not null | 
+ daddr  | character varying(20) |           | not null | 
+ city   | character varying(25) |           |          | 
+Indexes:
+    "doctor_pkey" PRIMARY KEY, btree (dno)
+Check constraints:
+    "doctor_dno_check" CHECK (dno > 0)
+
+sy53=> select *from doctor;
+ dno | dname | daddr | city 
+-----+-------+-------+------
+(0 rows)
+
+sy53=> create table patient(
+pno int primary key check(pno>0),
+pname varchar(20) NOT NULL,
+paddr varchar(20) NOT NULL);
+CREATE TABLE
+sy53=> \d patient;
+                     Table "public.patient"
+ Column |         Type          | Collation | Nullable | Default 
+--------+-----------------------+-----------+----------+---------
+ pno    | integer               |           | not null | 
+ pname  | character varying(20) |           | not null | 
+ paddr  | character varying(20) |           | not null | 
+Indexes:
+    "patient_pkey" PRIMARY KEY, btree (pno)
+Check constraints:
+    "patient_pno_check" CHECK (pno > 0)
+
+sy53=> select *from patient;
+ pno | pname | paddr 
+-----+-------+-------
+(0 rows)
+
+sy53=> create table ptdr(
+disease varchar(20) NOT NULL,
+no_visit int NOT NULL check (no_visit>0),
+pno int references patient(pno),
+dno int references doctor(dno),
+primary key(pno,dno));
+CREATE TABLE
+sy53=> \d ptdr;
+                        Table "public.ptdr"
+  Column  |         Type          | Collation | Nullable | Default 
+----------+-----------------------+-----------+----------+---------
+ disease  | character varying(20) |           | not null | 
+ no_visit | integer               |           | not null | 
+ pno      | integer               |           | not null | 
+ dno      | integer               |           | not null | 
+Indexes:
+    "ptdr_pkey" PRIMARY KEY, btree (pno, dno)
+Check constraints:
+    "ptdr_no_visit_check" CHECK (no_visit > 0)
+Foreign-key constraints:
+    "ptdr_dno_fkey" FOREIGN KEY (dno) REFERENCES doctor(dno)
+    "ptdr_pno_fkey" FOREIGN KEY (pno) REFERENCES patient(pno)
+
+sy53=> select *from ptdr;
+ disease | no_visit | pno | dno 
+---------+----------+-----+-----
+(0 rows)
+*/
+
+create or replace procedure patient(in pno int, in pname varchar(20) ,in paddr varchar(20))as'
+begin
+      insert into patient values(pno, pname, paddr);
+end;
+'language'plpgsql';
+
+/*output:-
+                                                           ^
+sy4=> 
+CREATE PROCEDURE
+sy53=> call paticreate or replace procedure patient(in pno int, in pname varchar(20) ,in paddr varchar(20))as'
+begin
+      insert into patient values(pno, pname, paddr);
+end;
+'language'plpgsql';
+ent(1,'sakshi','dhule');
+CALL
+sy53=> call patient(2,'deepa','pune');
+CALL
+sy53=> call patient(3,'gauri','goa');
+CALL
+sy53=> call patient(4,'khushi','mumbai');
+CALL
+sy53=> call patient(5,'siddhi','kolkata');
+CALL
+sy53=> call patient(6,'meena','chennai');
+CALL
+sy53=> select *from patient;
+ pno | pname  |  paddr  
+-----+--------+---------
+   1 | sakshi | dhule
+   2 | deepa  | pune
+   3 | gauri  | goa
+   4 | khushi | mumbai
+   5 | siddhi | kolkata
+   6 | meena  | chennai
+(6 rows)
+*/
+
+create or replace procedure doctor(in dno int, in dname varchar(20) ,in daddr varchar(20), in city varchar(25))as'
+begin
+      insert into doctor values(dno, dname, daddr,city);
+end;
+'language'plpgsql';
+
+/* output:-
+CREATE PROCEDURE
+sy53=> call doctor(111,'Dr.Gauri','Mgrd','nashik');
+CALL
+sy53=> call doctor(112,'Dr.poonam','laxmird','pune');
+CALL
+sy53=> call doctor(113,'Dr.mohit','gandhird','delhi');
+CALL
+sy53=> call doctor(114,'Dr.Sai','nimani','indore');
+CALL
+sy53=> call doctor(115,'Dr.piyu','ranengr','jaipur');
+CALL
+sy53=> select *from doctor;
+ dno |   dname   |  daddr   |  city  
+-----+-----------+----------+--------
+ 111 | Dr.Gauri  | Mgrd     | nashik
+ 112 | Dr.poonam | laxmird  | pune
+ 113 | Dr.mohit  | gandhird | delhi
+ 114 | Dr.Sai    | nimani   | indore
+ 115 | Dr.piyu   | ranengr  | jaipur
+(5 rows)
+*/
+
+create or replace procedure ptdr(in disease varchar(20), in no_visit int, in pno int, in dno int)as'
+begin
+      insert into ptdr values(disease, no_visit, pno,dno);
+end;
+'language'plpgsql';
+
+/* output:-
+sy53=> create or replace procedure ptdr(in disease varchar(20), in no_visit int, in pno int, in dno int)as'
+begin
+      insert into ptdr values(disease, no_visit, pno,dno);
+end;
+'language'plpgsql';
+CREATE PROCEDURE
+sy53=> call ptdr('typhoid',2,1,111);
+CALL
+sy53=> call ptdr('fever',5,2,111);
+CALL
+sy53=> call ptdr('diabetes',10,3,112);
+CALL
+sy53=> call ptdr('maleria',4,4,113);
+CALL
+sy53=> call ptdr('polio',8,5,114);
+CALL
+sy53=> select *from ptdr;
+ disease  | no_visit | pno | dno 
+----------+----------+-----+-----
+ typhoid  |        2 |   1 | 111
+ fever    |        5 |   2 | 111
+ diabetes |       10 |   3 | 112
+ maleria  |        4 |   4 | 113
+ polio    |        8 |   5 | 114
+(5 rows)
+*/
+/*
+*/
+/*
+a)
+create or replace procedure diabetes_patients(in doc_no int)
+as'
+declare
+      p_rec record;
+begin
+      00n
+            select p.pno, p.pname, p.paddr, t.no_visit
+            from patient p
+            join ptdr t on p.pno = t.pno
+            where t.dno = doc_no
+              and t.disease = ''Diabetes''
+              and t.no_visit > 3
+      loop
+           raise notice ''Patient No: %, Name: %, Address: %, Visits: %'',
+                        p_rec.pno, p_rec.pname, p_rec.paddr, p_rec.no_visit;
+      end loop;
+end;
+'language plpgsql;
+/*
+//output
+sy53=> call diabetes_patients(112);
+NOTICE:  Patient No: 3, Name: gauri, Address: goa, Visits: 10
+CALL
+b)
+create or replace procedure total_visit_kumar(inout total int default 0)
+as'
+begin
+      select sum(no_visit) into total
+      from ptdr t
+      join doctor d on t.dno = d.dno
+      where d.dname = ''Dr.Kumar'';
+      raise notice ''Total Visits for Dr.Kumar = %'', total;
+end;
+'language plpgsql;
+//output
+sy53=> call total_visit_kumar();
+NOTICE:  Total Visits for Dr.Kumar = 18
+ total 
+-------
+    18
+(1 row)
+*/
+
+
+
